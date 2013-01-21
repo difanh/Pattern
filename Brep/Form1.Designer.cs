@@ -106,7 +106,7 @@
             this._tbx_bubblesize.Name = "_tbx_bubblesize";
             this._tbx_bubblesize.Size = new System.Drawing.Size(43, 20);
             this._tbx_bubblesize.TabIndex = 10;
-            this._tbx_bubblesize.Text = "0.5";
+            this._tbx_bubblesize.Text = "1";
             // 
             // _tb_extru_dim
             // 
@@ -181,7 +181,7 @@
             this._tbx_select_plane.Name = "_tbx_select_plane";
             this._tbx_select_plane.Size = new System.Drawing.Size(43, 20);
             this._tbx_select_plane.TabIndex = 19;
-            this._tbx_select_plane.Text = "1";
+            this._tbx_select_plane.Text = "3";
             // 
             // label6
             // 

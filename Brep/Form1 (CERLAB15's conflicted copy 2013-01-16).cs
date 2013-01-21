@@ -119,10 +119,10 @@ namespace Brep
                       // Console.WriteLine("Tip total/rate:" + ControlChars.Tab + "{0,8:c} ({1:p1})", tip, tipRate)
 
                        T = (float)(EigenList[i].m11 + EigenList[i].m22);
-                       D = (float)(EigenList[i].m11 * EigenList[i].m22 - EigenList[i].m12 * EigenList[i].m12);
+                       D = EigenList[i].m11 * EigenList[i].m22 - EigenList[i].m12 * EigenList[i].m12;
 
-                       L1 = T / 2 + (float)Math.Sqrt(((T * T) / 4) - D);
-                       L2 = T / 2 - (float)Math.Sqrt(((T * T) / 4) - D);
+                       L1 = T / 2 + (float)Math.Pow((T * T) / 4 + D, 1 / 2);
+                       L2 = T / 2 + (float)Math.Pow((T * T) / 4 - D, 1 / 2);
 
                        file.WriteLine(L1.ToString() + "\t" + L2.ToString());
 
@@ -382,10 +382,9 @@ namespace Brep
 
             
             string strCmdText;
-            strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -ceaddnonmanifold -cereconsider -osrm output.srf";
+           // strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -ceaddnonmanifold -cereconsider -osrm output.srf";
             
-            //ved
-            //strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf";
+            strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf";
 
             Console.WriteLine("/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf");
 
@@ -415,9 +414,9 @@ namespace Brep
                 
    
             // -f can be cheap for background mesh in Ved's COde
-             //  strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd  U" + bsize + " -e 100 -f 400";
+           //    strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd  U" + bsize + " -e 100 -f 400";
 
-                strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd U" + bsize + "  -e 1200 -f 5600";
+                strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd U" + bsize + "  -e 1200 -f 4800";
                 Console.WriteLine(strCmdText);
                 Thread.Sleep(new TimeSpan(0, 0, 10));
                 System.Diagnostics.Process.Start("CMD.exe", strCmdText);
@@ -531,8 +530,6 @@ namespace Brep
 
             SketchCircle[] oCircleVect = new SketchCircle[100];
 
-            SketchEllipse[] oEllipse = new SketchEllipse[100];
-
              string exePath = "";
              if (anysotropy == true)
              {
@@ -584,28 +581,7 @@ namespace Brep
             ExtrudeFeature oExtrude = default(ExtrudeFeature);
 
             Point2d oPoint2d = mApp.TransientGeometry.CreatePoint2d(0, 0);
-
-             UnitVector2d oUniVector = oTG.CreateUnitVector2d (1,1);
             //613
-
-            //Finding the max value of the list in each direction
-             double maxValx = FindMaxVal(listVO1, 1); 
-             double maxValy = FindMaxVal(listVO1, 2);
-             double maxValz = FindMaxVal(listVO1, 3);
-
-             //Finding the min value of the list in each direction
-             double minValx = FindMinVal(listVO1, 1);
-             double minValy = FindMinVal(listVO1, 2);
-             double minValz = FindMinVal(listVO1, 3);
-
-             double tval = 0.0; // temporal value
-
-             double parat = 0;
-
-             double rval = 0; //value of the radii
-
-
-             
 
             for (int i = 0; i < lineCount; i++) //chnage here the number of bubbles used
             {
@@ -613,10 +589,6 @@ namespace Brep
                 {
                     oPoint2d.X = listVO1[i].value2;
                     oPoint2d.Y = listVO1[i].value3;
-
-                    oUniVector.X = 0;
-                    oUniVector.Y = 1;
-
 
                  ///   oSketch.SketchCircles.AddByCenterRadius(mApp.TransientGeometry.CreatePoint2d(listVO1[i].value2,
                  ///      listVO1[i].value3), Convert.ToDouble(_tbx_bubblesize.Text) / 2); //change here the value for the araius to be use
@@ -626,7 +598,7 @@ namespace Brep
 
                     if (anysotropy == true)
                     {
-                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d2/2.0); //change here the value for the araius to be use
+                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d2/4.0); //change here the value for the araius to be use
 
                     }
                     else
@@ -638,16 +610,12 @@ namespace Brep
                 else if (Convert.ToInt16(_tbx_select_plane.Text) == 2)
                 {
 
-
                     oPoint2d.X = -listVO1[i].value1;
                     oPoint2d.Y = listVO1[i].value3;
 
-                    oUniVector.X = 0;
-                    oUniVector.Y = 1;
-
                     if (anysotropy == true)
                     {
-                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d2/2.0); //change here the value for the araius to be use
+                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d2/4.0); //change here the value for the araius to be use
 
                     }
                     else
@@ -669,55 +637,16 @@ namespace Brep
                     oPoint2d.X = listVO1[i].value1;
                     oPoint2d.Y = listVO1[i].value2;
 
-                    oUniVector.X = 0;
-                    oUniVector.Y = 1;
-
-                    double tempay = (minValy)/1.25;
-                   
-                 
-
                     if (anysotropy == true)
                     {
-                       // oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d1/2.0); //change here the value for the araius to be use
-                       // oSketch.SketchEllipses.Add(oPoint2d, oUniVector, (1 / (float)Math.Sqrt(EigenSize[i].d1)) / 2.0, (1 / (float)Math.Sqrt(EigenSize[i].d2)) / 2.0);
-                        oSketch.SketchEllipses.Add(oPoint2d, oUniVector, EigenSize[i].d1/1.25, EigenSize[i].d2/1.25 );
-                   
-                    
+                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, EigenSize[i].d2/4.0); //change here the value for the araius to be use
+
                     }
                     else
                     {
-                       /* if (oPoint2d.Y >= tempay && oPoint2d.Y <= maxValy)
-                        {
-                          // tval = (Convert.ToDouble(_tbx_bubblesize.Text) / 2) * 1.35 ;
-
-                            tval = (Convert.ToDouble(_tbx_bubblesize.Text) / 2);
-
-                            parat =Math.Abs(oPoint2d.Y)/ Math.Abs( maxValy - minValy);
-
-
-                            tval = tval * (1 - parat) + tval * 1.5 * parat;
-
-                        }
-                        else 
-                        {
-                           tval = Convert.ToDouble(_tbx_bubblesize.Text) / 2;
-                        }*/
-
-                        tval = (Convert.ToDouble(_tbx_bubblesize.Text) / 2);
-
-                        parat = Math.Abs(oPoint2d.Y- minValy) / Math.Abs(maxValy - minValy);
-
-
-                        rval = tval * (1 - parat) *0.8 + tval * 1.2 * parat;
-
-                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, rval); //change here the value for the araius to be use
+                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, Convert.ToDouble(_tbx_bubblesize.Text) / 2); //change here the value for the araius to be use
             
                     }
-
-                 
-
-
-                    
                 }
 
                 else if (Convert.ToInt16(_tbx_select_plane.Text) == 4)
@@ -745,73 +674,11 @@ namespace Brep
             oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile,
                PartFeatureOperationEnum.kCutOperation);
 
-            oExtrudeDef.SetDistanceExtent(Convert.ToDouble(_tb_extru_dim.Text) , PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+            oExtrudeDef.SetDistanceExtent(Convert.ToDouble(_tb_extru_dim.Text) / 10, PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
 
             oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
 
 
-        }
-
-        public double sinfun (int i)
-        {
-
-            double val;
-
-            val = Math.Sin(Math.PI/i);
-
-            return val;
-
-
-        }
-
-        double FindMaxVal(List<VO> list, int direction)
-        {
-            if (list.Count == 0)
-            {
-                throw new InvalidOperationException("Empty list");
-            }
-            double maxAge = double.MinValue;
-            foreach (VO type in list)
-            {
-                if (type.value1 > maxAge && direction == 1)
-                {
-                    maxAge = type.value1;
-                }
-                if (type.value2 > maxAge && direction == 2)
-                {
-                    maxAge = type.value2;
-                }
-                if (type.value3 > maxAge && direction == 3)
-                {
-                    maxAge = type.value3;
-                }
-            }
-            return maxAge;
-        }
-
-        double FindMinVal(List<VO> list, int direction)
-        {
-            if (list.Count == 0)
-            {
-                throw new InvalidOperationException("Empty list");
-            }
-            double minAge = double.MaxValue;
-            foreach (VO type in list)
-            {
-                if (type.value1 < minAge && direction == 1)
-                {
-                    minAge = type.value1;
-                }
-                if (type.value2 < minAge && direction == 2)
-                {
-                    minAge = type.value2;
-                }
-                if (type.value3 < minAge && direction == 3)
-                {
-                    minAge = type.value3;
-                }
-            }
-            return minAge;
         }
 
         private void pBarCounter(int postionBar)
@@ -846,7 +713,7 @@ namespace Brep
             lbl_status.Refresh();
 
 
-            strCmdText = "/C del input.stl *.srf *.tfd  *.srm"; //*.nt2
+            strCmdText = "/C del input.stl *.srf *.tfd *.nt2 *.srm";
 
             pBarCounter(100);
 
@@ -1030,17 +897,12 @@ namespace Brep
             //CHECK that the boundaries are correct
             string strCmdText;
             strCmdText = "/C tensorcli.exe --geom meshd.srf --disablepadbgmesh --bgmesh __ " // __ means mesh.srf
-             + "--insertbc " + " 11.2 -9  0 0.7 0.0  0.2  "
-             + "--insertbc " + " 13 -15  0 0.4 0.0  0.405 "
-          //  + "--insertbc " + " 8.5 -15  0 0.5 0.0  0.505 "
-             + "--insertbc " + " 8.5 -15.0  0 0.5 0.0  0.505 "
-             + "--insertbc " + " 15 -8.5  0 0.7 0.0  0.2 "
-         
-
-           //    + "--insertbc " + " 35 -8  0 0.7 1.2  0.3  "
-           //  + "--insertbc " + " 38 -8  0 0.4 0.0  0.405 "
-           //  + "--insertbc " + " 42 -8  0 0.5 0.0  0.505 "
-          //   + "--insertbc " + " 48 -8  0 0.7 0.0  0.3 "
+             + "--insertbc " + " 44 -8  0 1.15 0.0  0.1  "
+             + "--insertbc " + " 35 -8  0 0.7 0.0  0.2  "
+             + "--insertbc " + " 38 -15  0 0.9 0.0  0.5 "
+             + "--insertbc " + " 42 -20  0 0.9 0.0  0.5 "
+             + "--insertbc " + " 44 -25  0 1.15 0.0  0.02 "
+           //  + "--insertbc " + " 50 -8  0 1.0 0.0  1.15  "
 
 
              + " --savebgmesh insert.srf --savefield insert.nt2 --persevere"; 
