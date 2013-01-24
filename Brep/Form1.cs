@@ -246,6 +246,7 @@ namespace Brep
                 {
                     PartComponentDefinition oPartCom = mApp.ActiveDocument as PartComponentDefinition;
                     PartDocument oDoc = mApp.ActiveDocument as PartDocument;
+                  //  AssemblyDocument oDoc = mApp.ActiveDocument as AssemblyDocument;
 
                     //oPartCom.SurfaceBodies[1].Faces[1].get_AlternateBody(1);
 
@@ -382,10 +383,11 @@ namespace Brep
 
             
             string strCmdText;
-            strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -ceaddnonmanifold -cereconsider -osrm output.srf";
+            // strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -ceaddnonmanifold -cereconsider -ceangthr 60 -osrm output.srf";
+            // strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -ceaddnonmanifold -cereconsider -osrm output.srf"; //was working
             
             //ved
-            //strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf";
+            strCmdText = "/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf";
 
             Console.WriteLine("/C volmesh --GEP --PGEP -infile input.stl -invert -reorient -ceaddnonmanifold -ceangthr 60 -scale 1 1 0 -osrm output.srf");
 
@@ -415,9 +417,9 @@ namespace Brep
                 
    
             // -f can be cheap for background mesh in Ved's COde
-             //  strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd  U" + bsize + " -e 100 -f 400";
+            //   strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd  U" + bsize + " -e 100 -f 400";
 
-                strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd U" + bsize + "  -e 1200 -f 5600";
+                strCmdText = "/C volmesh --BUB --PBUB -infile output.srf -out meshd.srf -autoboundary -tfd U" + bsize + " -e 1200 -f 2500"; //--PBUB -qdom -infile
                 Console.WriteLine(strCmdText);
                 Thread.Sleep(new TimeSpan(0, 0, 10));
                 System.Diagnostics.Process.Start("CMD.exe", strCmdText);
@@ -519,7 +521,7 @@ namespace Brep
             Camera oCamera = mApp.ActiveView.Camera;
 
             oCamera.ViewOrientationType = ViewOrientationTypeEnum.kIsoTopLeftViewOrientation;
-            oCamera.Apply();
+         //--->>>>   oCamera.Apply();
 
             mApp.ActiveView.Fit(true);
 
@@ -652,7 +654,7 @@ namespace Brep
                     }
                     else
                     {
-                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, Convert.ToDouble(_tbx_bubblesize.Text) / 4); //change here the value for the araius to be use
+                        oSketch.SketchCircles.AddByCenterRadius(oPoint2d, Convert.ToDouble(_tbx_bubblesize.Text) / 2); //change here the value for the araius to be use
 
                     }
                   
@@ -703,12 +705,14 @@ namespace Brep
                            tval = Convert.ToDouble(_tbx_bubblesize.Text) / 2;
                         }*/
 
-                        tval = (Convert.ToDouble(_tbx_bubblesize.Text) / 2);
+                       // tval = (Convert.ToDouble(_tbx_bubblesize.Text)/2.0);  //<<<< uniform
+                      // tval = (Convert.ToDouble(_tbx_bubblesize.Text) * 0.9);  //<<<< bubble packing
 
-                        parat = Math.Abs(oPoint2d.Y- minValy) / Math.Abs(maxValy - minValy);
+                       parat = Math.Abs(oPoint2d.Y- minValy) / Math.Abs(maxValy - minValy);
 
 
-                        rval = tval * (1 - parat) *0.8 + tval * 1.2 * parat;
+                       tval = Convert.ToDouble(_tbx_bubblesize.Text)/2.0; //graded
+                       rval =  tval * (1 - parat) * 0.2 + tval * 1.2 * parat;
 
                         oSketch.SketchCircles.AddByCenterRadius(oPoint2d, rval); //change here the value for the araius to be use
             
@@ -747,7 +751,7 @@ namespace Brep
 
             oExtrudeDef.SetDistanceExtent(Convert.ToDouble(_tb_extru_dim.Text) , PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
 
-            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+           oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef); //use to extrude the featuress
 
 
         }
@@ -1096,7 +1100,9 @@ namespace Brep
            
              string strCmdText2;
              strCmdText2 = "/C volmesh --BUB --PBUB -infile meshd.srf -tfd tensor.tfd"
-                + " -remeshqualitymode -out meshanid.srf -e 1200 -f 400";
+                + " -remeshqualitymode -qdom --out meshanid.srf -e 1200 -f 400"; //-qdom
+
+             // "/C volmesh --GEP --PGEP -triangulate -infile meshanid.srf -osrm meshanid.srf"  //use this command everytime you use qdom
 
              lbl_status.Text = "Creating  meshanid.srf file ";
              lbl_status.Refresh();
